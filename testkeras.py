@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 model = InceptionResNetV2(weights='imagenet')
 count = 0
 for i in range(60):
-    img_path = 'crop_image/bike_'+str(i)+'.jpg'
+    img_path = 'crop_image2/bike_'+str(i)+'.jpg'
     img = image.load_img(img_path, target_size=(299, 299))
     x = image.img_to_array(img)
     x = np.expand_dims(x, axis=0)

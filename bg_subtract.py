@@ -34,7 +34,7 @@ class Person:
             t3 = decode_predictions(preds, top=3)[0]
             for result in t3:
                 if result[1] == 'motor_scooter' and result[2] > 0.1:
-                    cv2.imwrite("crop_image/bike_"+str(self.n)+".jpg",frame[y:y+h, x:x+w])
+                    cv2.imwrite("crop_image2/bike_"+str(self.n)+".jpg",frame[y:y+h, x:x+w])
                     found = True
             if found:
                 print(self.n,'-',t3)
@@ -60,7 +60,7 @@ while True:
     ctrs, hier = cv2.findContours(tresh, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
     for i, ctr in enumerate(ctrs):
         x, y, w, h = cv2.boundingRect(ctr)  # get xywh from points
-        if 100 < w and h/w > 1.9 and y > frame.shape[0]*0.7:
+        if h > 200 and y > frame.shape[0]*0.6:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
 
             x0, y0 = x+(w/2), y+(h/2)
@@ -89,8 +89,9 @@ while True:
         p.updated = False
         cv2.putText(frame,str(p.n),(p.x,p.y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
     # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
+    cv2.line(frame, (0, int(frame.shape[0]*0.7)), (frame.shape[1], int(frame.shape[0]*0.7)), (125,125,0), 2)
     cv2.imshow('Frame', frame)
-    # cv2.imshow('KNN',tresh)
+    cv2.imshow('KNN',tresh)
     key = cv2.waitKey(1)
     if key == 32:
         # print("space")
