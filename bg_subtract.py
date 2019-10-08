@@ -1,13 +1,14 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2 
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name = 'a1'
+video_name = 'a2'
 #yes, video name
 show = False
 #show frame
@@ -37,7 +38,7 @@ model = InceptionResNetV2(weights='imagenet')
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=trsh,history=hist,detectShadows=shadow)
 number = 0
 p_list = []
-print("Process Started",video_name)
+print("Process Started Video:",video_name,'. . .')
 
 class Person:
     def __init__(self, x, y, w, h, n):
@@ -89,14 +90,24 @@ class Person:
                     cv2.imwrite("crop_img/"+video_name+"/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
                     found = True
             if found:
-                total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-                print('Progress:', "{0:.3f}".format(100*current/total)+'%('+str(current)+'/'+str(total)+')', 'bike #'+str(img_num),'-',t3)
+                print()
+                print('Bike #'+str(img_num),':',t3)
                 img_num += 1
             self.isSaved = True
 
+progress = 0
 while True:
     _, frame = cap.read()
+    if frame is None:
+        print('Nothing to read, Closing Process')
+        break
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+    sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str(current)+'/'+str(total)+')')
+    sys.stdout.flush()
+    sys.stdout.write("\b" * (100))
+
+    
     half_frame = frame.copy()
     half_frame = half_frame[int(half_frame.shape[0]*disc_ratio):,:]
     disp_frame = half_frame.copy()
@@ -146,5 +157,7 @@ while True:
         if key == 27:
             # print("esc")
             break
+
+sys.stdout.write("]\n")
 cap.release()
 cv2.destroyAllWindows()
