@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name = 'a2'
+video_name_list = ['xxx','a1','a2','a3','a4']
 #yes, video name
 show = False
 #show frame
@@ -33,12 +33,8 @@ max_speed_ratio = 0.2
 
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
 img_num = 0
-cap = cv2.VideoCapture('video/'+video_name+'.mp4')
 model = InceptionResNetV2(weights='imagenet')
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=trsh,history=hist,detectShadows=shadow)
-number = 0
-p_list = []
-print("Process Started Video:",video_name,'. . .')
 
 class Person:
     def __init__(self, x, y, w, h, n):
@@ -72,7 +68,6 @@ class Person:
     def saveImg(self, frame, x, y, w, h):
         if not self.isSaved and self.direction == -1: # is up
             global img_num
-            global cap
             y0 = y-extra_top if y-extra_top > 0 else 0
             img = cv2.resize(frame[y0:y+h, x:x+w], (299,299))
             img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -87,7 +82,7 @@ class Person:
             
             for result in t3:
                 if result[1] == 'motor_scooter' and result[2] > 0.1:
-                    cv2.imwrite("crop_img/"+video_name+"/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
+                    cv2.imwrite("extracted/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
                     found = True
             if found:
                 print()
@@ -95,69 +90,74 @@ class Person:
                 img_num += 1
             self.isSaved = True
 
-progress = 0
-while True:
-    _, frame = cap.read()
-    if frame is None:
-        print('Nothing to read, Closing Process')
-        break
-    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-    sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str(current)+'/'+str(total)+')')
-    sys.stdout.flush()
-    sys.stdout.write("\b" * (100))
+for video_name in video_name_list:
+    cap = cv2.VideoCapture('video/'+video_name+'.mp4')
+    obj_number = 0
+    p_list = []
+    print("Process Started on Video:",video_name+'.mp4')
 
-    
-    half_frame = frame.copy()
-    half_frame = half_frame[int(half_frame.shape[0]*disc_ratio):,:]
-    disp_frame = half_frame.copy()
-    binary = MOG2.apply(half_frame)
-    _, binary = cv2.threshold(binary,200,255,cv2.THRESH_BINARY)
-    kernel = np.ones((5,5),np.uint8)
-    binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
-    binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-
-    ctrs, hier = cv2.findContours(binary, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
-    for i, ctr in enumerate(ctrs):
-        x, y, w, h = cv2.boundingRect(ctr)  # get xywh from points
-        if h > bike_h:
-            xc, yc = x+(w/2), y+(h/2)
-            exist = False
-            for p in p_list:
-                # print(x0, p.x," <> ",y0, p.y)
-                # print('x',x0-p.x,'<-> y',y0-p.y)
-                accepted_diff =  int(half_frame.shape[0]*max_speed_ratio)
-                if -accepted_diff < xc-p.x < accepted_diff and -accepted_diff < yc-p.y < accepted_diff: # center around some object in previous frame, check if its same object
-                    p.update(xc, yc, half_frame, x, y, w, h)
-                    exist = True
-                    break
-            if not exist:
-                # print("new",number)
-                p_list.append(Person(xc, yc, w, h, number)) # create new person
-                number+=1
-            if show:
-                cv2.rectangle(disp_frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    for p in p_list.copy():
-        p.life -= 1
-        if p.life == 0:
-            # print("remove",p.n)
-            p_list.remove(p)
-        p.updated = False
-        if show:
-            cv2.putText(disp_frame,str(p.n),(p.x,p.y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
-    # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
-    # cv2.line(half_frame, (0, int(half_frame.shape[0]*0.5)), (half_frame.shape[1], int(half_frame.shape[0]*0.5)), (200,0,200), 2)
-    if show:
-        cv2.imshow('BGR', cv2.resize(disp_frame, (int(half_frame.shape[1]*0.7),int(half_frame.shape[0]*0.7))))
-        cv2.imshow('Binary', cv2.resize(binary, (int(half_frame.shape[1]*0.7),int(half_frame.shape[0]*0.7))))
-        key = cv2.waitKey(1) ################################# DELAY IS HERE ####################################
-        if key == 32:
-            # print("space")
-            key = cv2.waitKey(0)
-        if key == 27:
-            # print("esc")
+    progress = 0
+    while True:
+        _, frame = cap.read()
+        if frame is None:
+            print('Nothing to read, Closing Process')
             break
+        total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
+        sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str(current)+'/'+str(total)+')')
+        sys.stdout.flush()
+        sys.stdout.write("\b" * (100))
 
-sys.stdout.write("]\n")
-cap.release()
-cv2.destroyAllWindows()
+        
+        half_frame = frame.copy()
+        half_frame = half_frame[int(half_frame.shape[0]*disc_ratio):,:]
+        disp_frame = half_frame.copy()
+        binary = MOG2.apply(half_frame)
+        _, binary = cv2.threshold(binary,200,255,cv2.THRESH_BINARY)
+        kernel = np.ones((5,5),np.uint8)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
+        binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+
+        ctrs, hier = cv2.findContours(binary, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
+        for i, ctr in enumerate(ctrs):
+            x, y, w, h = cv2.boundingRect(ctr)  # get xywh from points
+            if h > bike_h:
+                xc, yc = x+(w/2), y+(h/2)
+                exist = False
+                for p in p_list:
+                    # print(x0, p.x," <> ",y0, p.y)
+                    # print('x',x0-p.x,'<-> y',y0-p.y)
+                    accepted_diff =  int(half_frame.shape[0]*max_speed_ratio)
+                    if -accepted_diff < xc-p.x < accepted_diff and -accepted_diff < yc-p.y < accepted_diff: # center around some object in previous frame, check if its same object
+                        p.update(xc, yc, half_frame, x, y, w, h)
+                        exist = True
+                        break
+                if not exist:
+                    p_list.append(Person(xc, yc, w, h, obj_number)) # create new person
+                    obj_number+=1
+                if show:
+                    cv2.rectangle(disp_frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+        for p in p_list.copy():
+            p.life -= 1
+            if p.life == 0:
+                # print("remove",p.n)
+                p_list.remove(p)
+            p.updated = False
+            if show:
+                cv2.putText(disp_frame,str(p.n),(p.x,p.y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+        # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
+        # cv2.line(half_frame, (0, int(half_frame.shape[0]*0.5)), (half_frame.shape[1], int(half_frame.shape[0]*0.5)), (200,0,200), 2)
+        if show:
+            cv2.imshow('BGR', cv2.resize(disp_frame, (int(half_frame.shape[1]*0.7),int(half_frame.shape[0]*0.7))))
+            cv2.imshow('Binary', cv2.resize(binary, (int(half_frame.shape[1]*0.7),int(half_frame.shape[0]*0.7))))
+            key = cv2.waitKey(1) ################################# DELAY IS HERE ####################################
+            if key == 32:
+                # print("space")
+                key = cv2.waitKey(0)
+            if key == 27:
+                # print("esc")
+                break
+
+    sys.stdout.write("]\n")
+    cap.release()
+    cv2.destroyAllWindows()
