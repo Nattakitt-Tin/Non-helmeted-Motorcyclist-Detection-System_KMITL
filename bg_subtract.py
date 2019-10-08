@@ -7,6 +7,8 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
+video_name = 'a1'
+#yes, video name
 show = False
 #show frame
 black_bar = 455
@@ -76,7 +78,7 @@ class Person:
             
             for result in t3:
                 if result[1] == 'motor_scooter' and result[2] > 0.1:
-                    cv2.imwrite("crop_image2/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
+                    cv2.imwrite("crop_img/"+video_name+"/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
                     found = True
             if found:
                 print()
@@ -85,11 +87,11 @@ class Person:
             self.isSaved = True
 
 model = InceptionResNetV2(weights='imagenet')
-cap = cv2.VideoCapture('video/cctv3.mp4')
+cap = cv2.VideoCapture('video/'+video_name+'.mp4')
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=trsh,history=hist,detectShadows=shadow)
 number = 0
 p_list = []
-print("Process Started")
+print("Process Started",video_name)
 while True:
     print(">",end="")
     _, frame = cap.read()
