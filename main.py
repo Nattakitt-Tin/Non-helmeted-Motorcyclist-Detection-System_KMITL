@@ -74,7 +74,8 @@ class Person:
             imgx = image.img_to_array(img)
             imgx = np.expand_dims(imgx, axis=0)
             imgx = preprocess_input(imgx)
-
+            cv2.imshow('imgx',imgx)
+            cv2.waitKey(0)
             preds = model.predict(imgx)
             found = False
             t3 = decode_predictions(preds, top=3)[0]
