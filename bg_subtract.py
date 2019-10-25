@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name_list = ['a12','a13']
+video_name_list = ['a12','a13','a14','a15','a16','a17','a18','a19','a20','a21','a22','a23','a24','a25','a26','a27','a28','a29','a30','a31','a32','a33','a34','a35','a36','a37']
 #yes, video name
 show = False
 #show frame
@@ -30,7 +30,7 @@ max_speed_ratio = 0.2
 # ratio on frame height that we accept when 2 object between frame move
 accepted_bike_threshold = 0.1
 #accuracy accept
-img_num = 2300
+img_num = 2289
 #started img number
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
 current_video = 'xxx'
