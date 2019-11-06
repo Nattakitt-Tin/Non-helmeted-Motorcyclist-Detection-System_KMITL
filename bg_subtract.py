@@ -8,15 +8,13 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name_list = ['xxx','a1','a2','a3','a4']
+video_name_list = ['a12','a13','a14','a15','a16','a17','a18','a19','a20','a21','a22','a23','a24','a25','a26','a27','a28','a29','a30','a31','a32','a33','a34','a35','a36','a37']
 #yes, video name
 show = False
 #show frame
-black_bar = 455
-#actual video image height, set to 0 if no black bar
 cpt_range = 50
 #distance from bottom we accept to capture (to get the biggest obj)
-disc_ratio = 0.4
+disc_ratio = 0.3
 #Interes area, from 0. to 1. 
 trsh = 16
 #Background Subtraction Threshold
@@ -25,14 +23,17 @@ shadow = True
 hist = 500 
 #Background Subtraction Average frame history
 extra_top = 10
-#additional height to take, prevent a headless biker, in pixel
+#additional height to take, prevent a headless biker, in pixel1
 bike_h = 200
-#expected bike height, in pixel
+#expected bike height/width, in pixel
 max_speed_ratio = 0.2
 # ratio on frame height that we accept when 2 object between frame move
-
+accepted_bike_threshold = 0.1
+#accuracy accept
+img_num = 2289
+#started img number
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
-img_num = 0
+current_video = 'xxx'
 model = InceptionResNetV2(weights='imagenet')
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=trsh,history=hist,detectShadows=shadow)
 
@@ -49,8 +50,7 @@ class Person:
         self.isSaved = False
         self.direction = 0
 
-    def update(self, xc, yc, frame, x, y, w, h):
-        # print('update #', self.n)
+    def update(self, xc, yc, frame, x, y, w, h, bottom):
         if yc - self.first_y < 0:
             self.direction = -1 #up
         else:
@@ -60,14 +60,13 @@ class Person:
         self.y = int(yc)
         self.w = w
         self.h = h
-        if black_bar and black_bar - cpt_range < y+h < black_bar: #object float off bottom (default should be 0 without black bar)
-            self.saveImg(frame, x, y, w, h)
-        elif not black_bar and frame.shape[0] - cpt_range < y+h < frame.shape[0] - 10: # 10 pixel from bottom
+        if bottom - cpt_range < y+h < bottom: #object float off bottom (default should be 0 without black bar)
             self.saveImg(frame, x, y, w, h)
         
     def saveImg(self, frame, x, y, w, h):
         if not self.isSaved and self.direction == -1: # is up
             global img_num
+            global current_video
             y0 = y-extra_top if y-extra_top > 0 else 0
             img = cv2.resize(frame[y0:y+h, x:x+w], (299,299))
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -89,8 +88,8 @@ class Person:
             # print('It is', t3)
             
             for result in t3:
-                if result[1] == 'motor_scooter' and result[2] > 0.1:
-                    cv2.imwrite("extracted/bike_"+str(img_num)+".jpg",frame[y0:y+h, x:x+w])
+                if result[1] == 'motor_scooter' and result[2] > accepted_bike_threshold:
+                    cv2.imwrite("extracted/bike_"+str(img_num)+"_"+str(current_video)+".jpg",frame[y0:y+h, x:x+w])
                     found = True
             if found:
                 print()
@@ -99,20 +98,33 @@ class Person:
             self.isSaved = True
 
 for video_name in video_name_list:
+    current_video = video_name
     cap = cv2.VideoCapture('video/'+video_name+'.mp4')
     obj_number = 0
+    progress = 0
     p_list = []
     print("Process Started on Video:",video_name+'.mp4')
-
-    progress = 0
+    _, first = cap.read()
+    if first is None:
+            print('Nothing to read, Closing Process')
+            continue
+    while np.average(first) < 10:
+        _, first = cap.read()
+    first = first[int(first.shape[0]*disc_ratio):,:]
+    bottom = first.shape[0]
+    while True:
+        bottom -= 1
+        avg = np.average(first[bottom])
+        if avg > 10: 
+            break
     while True:
         _, frame = cap.read()
         if frame is None:
-            print('Nothing to read, Closing Process')
+            print('Video Ended, Closing Process')
             break
         total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
         current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-        sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str(current)+'/'+str(total)+')')
+        sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str((current//30)//60)+':'+str((current//30)%60)+'/'+str((total//30)//60)+':'+str((total//30)%60)+')')
         sys.stdout.flush()
         sys.stdout.write("\b" * (100))
 
@@ -125,6 +137,8 @@ for video_name in video_name_list:
         kernel = np.ones((5,5),np.uint8)
         binary = cv2.morphologyEx(binary, cv2.MORPH_CLOSE, kernel)
         binary = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+        kernel = np.array([[0,1,0],[0,1,0],[0,1,0],[0,1,0],[0,1,0]],np.uint8)
+        binary = cv2.dilate(binary,kernel)
 
         ctrs, hier = cv2.findContours(binary, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
         for i, ctr in enumerate(ctrs):
@@ -137,7 +151,7 @@ for video_name in video_name_list:
                     # print('x',x0-p.x,'<-> y',y0-p.y)
                     accepted_diff =  int(half_frame.shape[0]*max_speed_ratio)
                     if -accepted_diff < xc-p.x < accepted_diff and -accepted_diff < yc-p.y < accepted_diff: # center around some object in previous frame, check if its same object
-                        p.update(xc, yc, half_frame, x, y, w, h)
+                        p.update(xc, yc, half_frame, x, y, w, h, bottom)
                         exist = True
                         break
                 if not exist:
