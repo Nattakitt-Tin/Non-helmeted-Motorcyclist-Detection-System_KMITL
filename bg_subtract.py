@@ -70,12 +70,19 @@ class Person:
             global img_num
             y0 = y-extra_top if y-extra_top > 0 else 0
             img = cv2.resize(frame[y0:y+h, x:x+w], (299,299))
-            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            cv2.imshow('img',img)
             imgx = image.img_to_array(img)
             imgx = np.expand_dims(imgx, axis=0)
             imgx = preprocess_input(imgx)
-            cv2.imshow('imgx',imgx)
+
+            # print(imgx.shape)
+            # cv2.cvtColor(B)
+            # img = cv2.cvtColor(imgx[0], cv2.COLOR_RGB2BGR)
+            print(imgx[0])
+            cv2.imshow('imgx',imgx[0])
             cv2.waitKey(0)
+
             preds = model.predict(imgx)
             found = False
             t3 = decode_predictions(preds, top=3)[0]
@@ -159,6 +166,5 @@ for video_name in video_name_list:
                 # print("esc")
                 break
 
-    sys.stdout.write("]\n")
     cap.release()
     cv2.destroyAllWindows()
