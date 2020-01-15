@@ -8,9 +8,9 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name_list = ['a12','a13','a14','a15','a16','a17','a18','a19','a20','a21','a22','a23','a24','a25','a26','a27','a28','a29','a30','a31','a32','a33','a34','a35','a36','a37']
+video_name_list = ['a39']
 #yes, video name
-show = False
+show = True
 #show frame
 cpt_range = 50
 #distance from bottom we accept to capture (to get the biggest obj)
@@ -30,7 +30,7 @@ max_speed_ratio = 0.2
 # ratio on frame height that we accept when 2 object between frame move
 accepted_bike_threshold = 0.1
 #accuracy accept
-img_num = 2289
+img_num = 6170
 #started img number
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
 current_video = 'xxx'
@@ -70,7 +70,7 @@ class Person:
             y0 = y-extra_top if y-extra_top > 0 else 0
             img = cv2.resize(frame[y0:y+h, x:x+w], (299,299))
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-            cv2.imshow('img',img)
+            # cv2.imshow('img',img)
             imgx = image.img_to_array(img)
             imgx = np.expand_dims(imgx, axis=0)
             imgx = preprocess_input(imgx)
@@ -78,9 +78,9 @@ class Person:
             # print(imgx.shape)
             # cv2.cvtColor(B)
             # img = cv2.cvtColor(imgx[0], cv2.COLOR_RGB2BGR)
-            print(imgx[0])
-            cv2.imshow('imgx',imgx[0])
-            cv2.waitKey(0)
+            # print(imgx[0])
+            # cv2.imshow('imgx',imgx[0])
+            # cv2.waitKey(0)
 
             preds = model.predict(imgx)
             found = False
