@@ -10,6 +10,7 @@ from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, 
 
 #parameter set
 video_name_list = ['a1']
+
 #yes, video name
 show = False
 #show frame
@@ -31,7 +32,7 @@ max_speed_ratio = 0.2
 # ratio on frame height that we accept when 2 object between frame move
 accepted_bike_threshold = 0.1
 #accuracy accept
-img_num = 2289
+img_num = 6170
 #started img number
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
 current_video = 'xxx'
@@ -76,6 +77,7 @@ class Person:
             sqr_img = cv2.resize(bike_img, (299,299))
             
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
             # cv2.imshow('img',sqr_img)
             sqr_img = image.img_to_array(sqr_img)
             imgx = np.expand_dims(sqr_img, axis=0)
