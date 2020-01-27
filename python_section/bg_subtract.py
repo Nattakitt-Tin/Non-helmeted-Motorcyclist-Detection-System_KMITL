@@ -3,16 +3,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2 
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name_list = ['a1']
-
+video_name_list = ['a39']
 #yes, video name
-show = False
+show = True
 #show frame
 cpt_range = 50
 #distance from bottom we accept to capture (to get the biggest obj)
@@ -36,12 +34,9 @@ img_num = 6170
 #started img number
 ### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
 current_video = 'xxx'
-print('load model')
-general_model = InceptionResNetV2(weights='imagenet')
-print('InceptionResnetV2 loaded complete')
-helmet_model = load_model("incV3_final.h5")
+model = InceptionResNetV2(weights='imagenet')
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=trsh,history=hist,detectShadows=shadow)
-print('helmet model loaded complete')
+
 class Person:
     def __init__(self, x, y, w, h, n):
         self.x = int(x)
@@ -73,36 +68,32 @@ class Person:
             global img_num
             global current_video
             y0 = y-extra_top if y-extra_top > 0 else 0
-            bike_img = frame[y0:y+h, x:x+w]
-            sqr_img = cv2.resize(bike_img, (299,299))
-            
+            img = cv2.resize(frame[y0:y+h, x:x+w], (299,299))
             # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            # cv2.imshow('img',img)
+            imgx = image.img_to_array(img)
+            imgx = np.expand_dims(imgx, axis=0)
+            imgx = preprocess_input(imgx)
 
-            # cv2.imshow('img',sqr_img)
-            sqr_img = image.img_to_array(sqr_img)
-            imgx = np.expand_dims(sqr_img, axis=0)
-            preprocess_input(imgx) #may use /255. if something go wrong
-            preds = general_model.predict(imgx)
+            # print(imgx.shape)
+            # cv2.cvtColor(B)
+            # img = cv2.cvtColor(imgx[0], cv2.COLOR_RGB2BGR)
+            # print(imgx[0])
+            # cv2.imshow('imgx',imgx[0])
+            # cv2.waitKey(0)
 
+            preds = model.predict(imgx)
             found = False
             t3 = decode_predictions(preds, top=3)[0]
-
+            # print('It is', t3)
+            
             for result in t3:
                 if result[1] == 'motor_scooter' and result[2] > accepted_bike_threshold:
-                    # sqr_img = sqr_img/255.
-                    img = cv2.resize(bike_img, (299,299))
-                    img = img/255.
-                    preds = helmet_model.predict([[img]])
-                    helmet = preds[0][1]
-                    result_path = "extracted/helmet/bike_"+str(img_num)+"_"+str(current_video)+".jpg"
-                    if helmet < 0.5:
-                        # print('+ + + no helmet! + + +',helmet)
-                        result_path = "extracted/no_helmet/bike_"+str(img_num)+"_"+str(current_video)+".jpg"
-                    cv2.imwrite(result_path,bike_img)
+                    cv2.imwrite("extracted/bike_"+str(img_num)+"_"+str(current_video)+".jpg",frame[y0:y+h, x:x+w])
                     found = True
             if found:
-                # print()
-                # print('Bike #'+str(img_num),':',t3)
+                print()
+                print('Bike #'+str(img_num),':',t3)
                 img_num += 1
             self.isSaved = True
 
