@@ -1,30 +1,30 @@
-// var holder = document.getElementById('drag-file');
-// var path = []
-// holder.ondragover = () => {
-//     return false;
-// };
+var holder = document.getElementById('drag-file');
+var path = []
+holder.ondragover = () => {
+    return false;
+};
 
-// holder.ondragleave = () => {
-//     return false;
-// };
+holder.ondragleave = () => {
+    return false;
+};
 
-// holder.ondragend = () => {
-//     return false;
-// };
+holder.ondragend = () => {
+    return false;
+};
 
-// holder.ondrop = (e) => {
-//     e.preventDefault();
+holder.ondrop = (e) => {
+    e.preventDefault();
 
-//     for (let f of e.dataTransfer.files) {
-//         console.log('File(s) you dragged here: ', f.path)
-//         var list_f = document.createElement('option');
-//         list_f.textContent = f.path;
-//         document.getElementById("l_file").appendChild(list_f)
-//         path.push(f.path)         
-//     }
-//     console.log(path)
-//     return false;
-// };
+    for (let f of e.dataTransfer.files) {
+        console.log('File(s) you dragged here: ', f.path)
+        var list_f = document.createElement('option');
+        list_f.textContent = f.path;
+        document.getElementById("l_file").appendChild(list_f)
+        path.push(f.path)         
+    }
+    console.log(path)
+    return false;
+};
 
 
 function go() {
@@ -82,10 +82,3 @@ $(canvas).on('mousemove', function(e) {
     //Output
     $('#output').html('x: '+last_mousex+', '+end_x+'<br/>y: '+last_mousey+', '+end_y+'<br/>mousedown: '+mousedown);
 });
-
-
-function win_o(){
-
-
-    
-}

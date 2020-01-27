@@ -5,18 +5,26 @@
       <meta charset="UTF-8">
       <title>Hello Python from Electron!</title>
     </head>
-     <!-- <div class= "file">
-       <h1>file section</h1> 
-       <div id="drag-file">
-         <select multiple size="10" id="l_file">
-           
-         </select multiple>
-         </div>
-         
-         <button onclick="go()">go</button>
-      
-      </div> -->
-      <canvas id="canvas" width="800" height="500"></canvas>
-<div id="output"></div>
+     <body>
+      <div class="grid-container">
+      <section class="file">
+        <table class="f_name">
+          <tr>
+            <th>File name</th>
+          </tr>
+        </table>
+        <table class="f_lo">
+          <tr>
+            <th>File location</th>
+          </tr>
+        </table>
+        <canvas class="myCanvas1" id="drag-file"></canvas>
+        <canvas class="myCanvas2" id="drag-file"></canvas>
+        
+      </section>
+      <section class="con">console</section>
+      <section class="out">output</section>
+      </div>
+     </body>
 </html>
 <script src="fu.js"></script>
