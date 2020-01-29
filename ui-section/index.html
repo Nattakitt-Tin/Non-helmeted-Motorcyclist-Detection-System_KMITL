@@ -6,25 +6,11 @@
       <title>Hello Python from Electron!</title>
     </head>
      <body>
-      <div class="grid-container">
-      <section class="file">
-        <table class="f_name">
-          <tr>
-            <th>File name</th>
-          </tr>
-        </table>
-        <table class="f_lo">
-          <tr>
-            <th>File location</th>
-          </tr>
-        </table>
-        <canvas class="myCanvas1" id="drag-file"></canvas>
-        <canvas class="myCanvas2" id="drag-file"></canvas>
-        
-      </section>
-      <section class="con">console</section>
-      <section class="out">output</section>
-      </div>
+    <button id="select-directory" onclick="select_f()">Select file</button>
+    <button onclick="open_win()">Set position</button>
+    <button>Start</button>
+    <div id="selected-file"></div>
      </body>
 </html>
 <script src="fu.js"></script>
+<script src="renderer.js"></script>
