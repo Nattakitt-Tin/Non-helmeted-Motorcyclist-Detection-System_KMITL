@@ -147,7 +147,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True):
             frame_copy = frame.copy()
             disp_frame = frame.copy()
             if mouse_down:
-                cv2.rectangle(disp_frame,(x1,y1),(x2,y2),(6, 186, 252), 2)
+                cv2.rectangle(disp_frame,(x1,y1),(x2,y2),(0, 0, 255), 2)
 
             binary = MOG2.apply(frame_copy)
             _, binary = cv2.threshold(binary,200,255,cv2.THRESH_BINARY)
@@ -182,11 +182,12 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True):
                 if show:
                     cv2.putText(disp_frame,str(p.n),(p.x,p.y),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
             # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
+            # cv2.line(half_frame, (0, int(half_frame.shape[0]*0.5)), (half_frame.shape[1], int(half_frame.shape[0]*0.5)), (200,0,200), 2)
             if show:
                 width = int(disp_frame.shape[1]*scale)
                 height = int(disp_frame.shape[0]*scale)
                 cv2.imshow('BGR', cv2.resize(disp_frame, (width, height)))
-                cv2.imshow('Binary', cv2.resize(binary, (width, height)))
+                # cv2.imshow('Binary', cv2.resize(binary, (width, height)))
                 key = cv2.waitKey(1) ################################# DELAY IS HERE ####################################
                 if key == 32:
                     # print("space")
