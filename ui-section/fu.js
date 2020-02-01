@@ -4,6 +4,7 @@ const {BrowserWindow,dialog,ipcMain} = require('electron').remote
 const path = require('path')
 const modalPath = path.join('file://', __dirname, 'get_po.html')
 var vdo_h = 0
+var pos = []
   
 
 holder.ondragover = () => {
@@ -39,10 +40,17 @@ function go() {
     var options = {
     args : [path_f] }
 
-    pyshell.run('hello.py',options,  function  (err, results)  {
+    pyshell.run('drawing.py',options,  function  (err, results)  {
      if  (err)  throw err;
     console.log('hello.py finished.');
-    console.log('results', results); });   	
+    pos.push(results[0])
+    pos.push(results[1])
+    pos.push(results[2])
+    pos.push(results[3])
+    // console.log('results', x1); 
+    console.log(pos)
+  
+  });  
 
 }
 
@@ -77,7 +85,7 @@ function select_f() {
             var d = document.getElementById('pa')
             d.addEventListener('loadedmetadata', function(e){
               console.log(d.videoWidth, d.videoHeight);
-              open_win(d.videoWidth,d.videoHeight)
+              // open_win(d.videoWidth,d.videoHeight)
           });
     
           }

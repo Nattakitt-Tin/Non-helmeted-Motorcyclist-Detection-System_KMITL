@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
 #parameter set
-video_name_list = ['a39']
+video_name_list = ['../video/a1.mp4']
 #yes, video name
 show = True
 #show frame
