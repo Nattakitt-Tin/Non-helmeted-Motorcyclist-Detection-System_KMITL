@@ -1,0 +1,15 @@
+* {
+    margin: 0;
+    padding: 0;
+    background-color: #3D3D3D;
+}
+
+
+
+#drag-file {
+    background-color: blue;
+    color:white;
+    text-align: center;
+    width:300px;
+    height:300px;
+}
