@@ -2,12 +2,13 @@ import cv2
 import numpy as np 
 import sys
 
-
 frame = None
 x1,y1,x2,y2 = 0,0,0,0
 mouse_down = False
 crop = False
 scale = 0.7
+p = sys.argv[1]
+re_p = p.replace('\\','/')
 
 def mouse_drawing(event, x, y, flags, params):
     global x1,y1,x2,y2,mouse_down,crop
@@ -27,6 +28,7 @@ def mouse_drawing(event, x, y, flags, params):
             print(y1)
             print(x2)
             print(y2)
+            print(re_p)
             sys.stdout.flush()
         if mouse_down:
             x2 = int(x/scale)
@@ -37,8 +39,7 @@ def mouse_drawing(event, x, y, flags, params):
             
             x1,y1,x2,y2 = 0,0,0,0
 
-cap = cv2.VideoCapture('../video/a21.mp4')
-
+cap = cv2.VideoCapture(re_p)
 cv2.namedWindow("Frame")
 cv2.setMouseCallback("Frame", mouse_drawing)
 
