@@ -9,36 +9,6 @@ from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
 
-<<<<<<< HEAD:python_section/bg_subtract.py
-#parameter set
-video_name_list = ['../video/a1.mp4']
-#yes, video name
-show = True
-#show frame
-cpt_range = 50
-#distance from bottom we accept to capture (to get the biggest obj)
-disc_ratio = 0.3
-#Interes area, from 0. to 1. 
-trsh = 16
-#Background Subtraction Threshold
-shadow = True
-#Enable shadow detect
-hist = 500 
-#Background Subtraction Average frame history
-extra_top = 10
-#additional height to take, prevent a headless biker, in pixel1
-bike_h = 200
-#expected bike height/width, in pixel
-max_speed_ratio = 0.2
-# ratio on frame height that we accept when 2 object between frame move
-accepted_bike_threshold = 0.1
-#accuracy accept
-img_num = 6170
-#started img number
-### -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  -  - ###
-=======
-
->>>>>>> master:Hel(p)Mate.py
 current_video = 'xxx'
 print('load model')
 general_model = InceptionResNetV2(weights='imagenet')
