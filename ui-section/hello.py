@@ -1,6 +1,10 @@
 import sys
 
-city = sys.argv[1]
+re = sys.argv[1]
 
-print('Hello from Python!'+city)
+# re = "sdsdsd\sdsdsdsd\sdsd"
+
+new_re = re.replace('\\','/')
+print("ori : "+re)
+print("new : "+new_re)
 sys.stdout.flush()
