@@ -1,4 +1,3 @@
-var holder = document.getElementById('drag-file');
 var path_f = []
 const {BrowserWindow,dialog,ipcMain} = require('electron').remote
 const path = require('path')
@@ -6,34 +5,6 @@ const modalPath = path.join('file://', __dirname, 'get_po.html')
 var vdo_h = 0
 var pos = []
 var file_p = []
-  
-
-holder.ondragover = () => {
-    return false;
-};
-
-holder.ondragleave = () => {
-    return false;
-};
-
-holder.ondragend = () => {
-    return false;
-};
-
-holder.ondrop = (e) => {
-    e.preventDefault();
-
-    for (let f of e.dataTransfer.files) {
-        console.log('File(s) you dragged here: ', f.path)
-        var list_f = document.createElement('option');
-        list_f.textContent = f.path;
-        document.getElementById("l_file").appendChild(list_f)
-        path_f.push(f.path)         
-    }
-    console.log(path_f)
-    return false;
-};
-
 
 function go() {
 
