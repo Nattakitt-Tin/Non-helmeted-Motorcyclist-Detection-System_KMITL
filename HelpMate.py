@@ -13,7 +13,7 @@ current_video = 'xxx'
 print('load model')
 general_model = InceptionResNetV2(weights='imagenet')
 print('Custom model loaded complete')
-helmet_model = load_model("incV3_final.h5")
+helmet_model = load_model("inceptionResNetV2_BEST.h5")
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=16,history=500,detectShadows=True)
 print('Helmet model loaded complete')
 
@@ -132,7 +132,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, extension='.mp4', 
     cv2.setMouseCallback("BGR", mouse_drawing)
     for video_name in video_name_list:
         current_video = video_name
-        cap = cv2.VideoCapture('video/'+video_name+extension)
+        cap = cv2.dnn.VideoCapture('video/'+video_name+extension)
         obj_number = 0
         progress = 0
         p_list = []
