@@ -125,26 +125,27 @@ def mouse_drawing(event, x, y, flags, params):
         x2 = int(x/scale)
         y2 = int(y/scale)
 
-def main(video_name_list, bike_h, max_speed_ratio, show=True, extension='.mp4', real_fps=False):
-    global current_video, progress, crop
-    
+def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
+    global current_video, progress, crop 
+
+    left,right,top,bottom = 0,0,0,0
     cv2.namedWindow("BGR")
     cv2.setMouseCallback("BGR", mouse_drawing)
+
     for video_name in video_name_list:
         current_video = video_name
-        cap = cv2.VideoCapture('video/'+video_name+extension)
+        cap = cv2.VideoCapture('video/'+video_name)
         obj_number = 0
         progress = 0
         p_list = []
-        print("Process Started on Video:",video_name+extension)
+        print("Process Started on Video:",video_name)
         _, first = cap.read()
         if first is None:
                 print('Nothing to read, Closing Process')
                 continue
         while np.average(first) < 10: #skip black frame
             _, first = cap.read()
-        left,right,top,bottom = 0,0,0,0
-        while True:
+        while not crop:
             disp_frame = first.copy()
             if mouse_down:
                 cv2.rectangle(disp_frame,(x1,y1),(x2,y2),(0, 0, 252), 2)
@@ -243,4 +244,4 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, extension='.mp4', 
         cv2.destroyAllWindows()
 
 
-main(['d1'], bike_h=100, max_speed_ratio=2, extension='.avi', real_fps=False, show=True)
+main(['c1.avi','c2.avi'], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
