@@ -1,4 +1,5 @@
 import sys
+import os
 
 re = sys.argv[1]
 
@@ -7,4 +8,5 @@ re = sys.argv[1]
 new_re = re.replace('\\','/')
 print("ori : "+re)
 print("new : "+new_re)
+os.mkdir(new_re)
 sys.stdout.flush()

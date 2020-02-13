@@ -13,11 +13,11 @@ current_video = 'xxx'
 print('load model')
 general_model = InceptionResNetV2(weights='imagenet')
 print('Custom model loaded complete')
-helmet_model = load_model("inceptionResNetV2_BEST.h5")
+helmet_model = load_model("inceptionresnetv2_final.h5")
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=16,history=500,detectShadows=True)
 print('Helmet model loaded complete')
 
-img_num = 0
+img_num = 45
 extra_top = 10
 
 frame = None

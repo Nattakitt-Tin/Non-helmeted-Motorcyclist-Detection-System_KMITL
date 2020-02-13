@@ -41,15 +41,3 @@ function gg(x){
     console.log(x)
 }
 
-
-
-// $(document).ready(function(){
-//   $("#drag-file tbody").click(function(){
-//     var t_data = $(this).children("td").map(function(){
-//       return $(this).text();
-//     }).get();
-//     var td=t_data[0]
-//     console.log(td)
-//   });
-// });
-// }
