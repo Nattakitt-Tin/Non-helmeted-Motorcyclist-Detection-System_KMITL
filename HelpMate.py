@@ -132,7 +132,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, extension='.mp4', 
     cv2.setMouseCallback("BGR", mouse_drawing)
     for video_name in video_name_list:
         current_video = video_name
-        cap = cv2.dnn.VideoCapture('video/'+video_name+extension)
+        cap = cv2.VideoCapture('video/'+video_name+extension)
         obj_number = 0
         progress = 0
         p_list = []
@@ -171,7 +171,12 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, extension='.mp4', 
                 delay = int(1000/fps) if real_fps else 1
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-            sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'% ('+str((current//30)//60)+':'+str((current//30)%60)+'/'+str((total//30)//60)+':'+str((total//30)%60)+')')
+            cmin = '0' + str((current//int(fps))//60); cmin = cmin[len(cmin)-2:]
+            csec = '0' + str((current//int(fps))%60); csec = csec[len(csec)-2:]
+            tmin = '0' + str((total//int(fps))//60); tmin = tmin[len(tmin)-2:]
+            tsec = '0' + str((total//int(fps))%60); tsec = tsec[len(tsec)-2:]
+            time_progress = ' (' + cmin + ':' + csec + '/' + tmin + ':' + tsec + ') '
+            sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'%' + time_progress)
             sys.stdout.flush()
             sys.stdout.write("\b" * (100))
             # print('the line is', the_line)
