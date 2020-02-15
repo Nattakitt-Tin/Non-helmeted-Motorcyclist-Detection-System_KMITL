@@ -37,6 +37,7 @@ class Person:
         self.h = h
         self.min_y = int(y)
         self.first_y = self.yc
+        self.first_x = self.xc
         self.n = n
         self.life = int(life)
         
@@ -44,19 +45,26 @@ class Person:
         self.G = random.randint(0,255)
         self.B = random.randint(0,255)
         self.isSaved = False
-        self.direction = 0
+        self.downward = None
+        self.rightward = None
 
     def update(self, frame, x, y, w, h, bottom,the_line):
-        if self.yc - self.first_y < 0:
-            self.direction = -1 #up
-        else:
-            self.direction = 1 # down
         self.life = 5
-        if self.direction < 0:
-            if y > self.min_y:
-                y = self.min_y
-            else:
-                self.min_y = y
+        if self.yc - self.first_y <= 0:
+            self.downward = False #up
+        else:
+            self.downward = True # down
+
+        if self.xc - self.first_x < 0:
+            self.rightward = False # <<
+        else:
+            self.rightward = True # >>
+
+        # if not self.downward:
+        #     if y > self.min_y:
+        #         y = self.min_y
+        #     else:
+        #         self.min_y = y
         
         self.x = int(x)
         self.y = int(y)
@@ -65,11 +73,11 @@ class Person:
         self.xc = int(x+(w/2))
         self.yc = int(y+(h/2))
         
-        if the_line < y+h < bottom: #object float off bottom
+        if y < the_line < y+h < bottom: #object float off bottom
             self.saveImg(frame, x, y, w, h)
         
     def saveImg(self, frame, x, y, w, h):
-        if not self.isSaved and self.direction == -1: # is up
+        if not self.isSaved and not self.downward: # is up
             global helmet_count, no_helmet_count
             global current_video
             y0 = y-extra_top if y-extra_top > 0 else 0
@@ -84,7 +92,6 @@ class Person:
             preprocess_input(imgx) #may use /255. if something go wrong
             preds = general_model.predict(imgx)
 
-            found = False
             t3 = decode_predictions(preds, top=3)[0]
 
             for result in t3:
@@ -92,33 +99,29 @@ class Person:
                     # sqr_img = sqr_img/255.
                     img = cv2.resize(bike_img, (299,299))
                     img = img/255.
+                    flip = ''
+                    if not self.rightward:
+                        img = cv2.flip(img, 1)
+                        flip = 'flip'
+
                     preds = helmet_model.predict([[img]])
                     helmet = preds[0][1]
-
-                    img_flip = cv2.flip(img, 1)
-                    preds_flip = helmet_model.predict([[img_flip]])
-                    helmet_flip = preds_flip[0][1]
                     
                     spt = current_video.split('/')
                     spt = spt[-1]
                     spt = spt.split('.')
                     spt = spt[0]
                     result_path = ''
-                    if helmet > 0.5 and helmet_flip > 0.5: #helmet
+                    if helmet > 0.5: #helmet
                         helmet_count += 1
                         result_path = "extracted/helmet/"+spt+"#"+str(helmet_count)
                     else: 
                         no_helmet_count += 1
                         result_path = "extracted/no_helmet/"+spt+"#"+str(no_helmet_count)
-                    
                     helmet = str(helmet)
                     helmet = helmet[:4]
-                    helmet_flip = str(helmet_flip)
-                    helmet_flip = helmet_flip[:4]
-                    result_path += " ["+ helmet + '] [' + helmet_flip +"].jpg"
-
+                    result_path += "" + flip +" ["+ helmet + "].jpg"
                     cv2.imwrite(result_path,bike_img)
-                    found = True
             self.isSaved = True
 
 def mouse_drawing(event, x, y, flags, params):
@@ -137,7 +140,7 @@ def mouse_drawing(event, x, y, flags, params):
         x2 = int(x/scale)
         y2 = int(y/scale)
 
-def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
+def main(video_name_list, bike_h, show=True, real_fps=False):
     global current_video, progress, crop 
 
     left,right,top,bottom = 0,0,0,0
@@ -172,7 +175,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
                 break
         fps = None
         delay = None
-        the_line = int((bottom-top)*0.66)
+        the_line = int((bottom-top)*0.7)
         while True:
             _, frame = cap.read()
             if frame is None:
@@ -208,19 +211,28 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
             binary = cv2.dilate(binary,kernel)
 
             ctrs, hier = cv2.findContours(binary, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
+            detected_p = []
             for i, ctr in enumerate(ctrs):
                 x, y, w, h = cv2.boundingRect(ctr)  # get xywh from points
                 if h > bike_h and h > w:
                     xc, yc = x+(w/2), y+(h/2)
                     exist = False
+                    min_diff = 9999
+                    nearest_p = None
                     for p in p_list:
-                        accepted_diff =  int(bike_h*max_speed_ratio)
-                        if -accepted_diff < xc-p.xc < accepted_diff and -accepted_diff < yc-p.yc < accepted_diff: # center around some object in previous frame, check if its same object
-                            p.update(frame_copy, x, y, w, h, frame.shape[0], the_line)
-                            exist = True
-                            break
-                    if not exist:
-                        p_list.append(Person(x, y, w, h, obj_number, fps)) # create new person
+                        if p not in detected_p:
+                            diff = ((xc-p.xc)**2 + (yc-p.yc)**2)**(0.5)
+                            if diff < min_diff and diff < frame.shape[0]/2:
+                                min_diff = diff
+                                nearest_p = p
+                                exist = True
+                    if exist:
+                        nearest_p.update(frame_copy, x, y, w, h, frame.shape[0], the_line)
+                        detected_p.append(nearest_p)
+                    else:
+                        new_person = Person(x, y, w, h, obj_number, fps)
+                        p_list.append(new_person) # create new person
+                        detected_p.append(new_person)
                         obj_number+=1
                     if show:
                         for p in p_list:
@@ -256,4 +268,4 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
         cv2.destroyAllWindows()
 
 
-main(["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
+main(["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/a1.mp4"], bike_h=100, real_fps=False, show=True)
