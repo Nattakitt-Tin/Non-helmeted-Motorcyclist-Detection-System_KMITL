@@ -1,5 +1,4 @@
-const file_list = []
-
+const file_re_name = []
 
 function fi(){
 const fs = require("fs");
@@ -11,12 +10,19 @@ const {dialog} = require("electron").remote;
     
   ],
   properties: ['openFile','multiSelections']
-}, (folderPaths) => {    
-  // let a = folderPaths
-  // console.log(folderPaths)
-  // console.log(folderPaths[2])
+}, (folderPaths) => {
    for(var i=0;i<folderPaths.length;i++){
-    file_list.push(folderPaths[i])
+    var pyshell =  require('python-shell');
+    var options = {
+    args : folderPaths[i] }
+    pyshell.run('re_name.py',options,  function  (err, results)  {
+      if  (err)  throw err;
+     file_re_name.push(results);
+    //  file_list.push(results[i])
+     
+   });  
+
+    // file_list.push(folderPaths[i])
     var iframe = document.getElementById("bg");
     // var elmnt = iframe.contentWindow.document.getElementById("f");
     var h = iframe.contentWindow.document.getElementById("f");
@@ -27,6 +33,8 @@ const {dialog} = require("electron").remote;
     tr.appendChild(th_path)
    }
   //  console.log("this is path : ",file_list)
+   console.log("rename ",file_re_name)
+  //  console.log(file_re_name.length)
 }
 
 

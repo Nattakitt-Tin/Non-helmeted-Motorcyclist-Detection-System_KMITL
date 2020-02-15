@@ -134,7 +134,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
 
     for video_name in video_name_list:
         current_video = video_name
-        cap = cv2.VideoCapture('video/'+video_name)
+        cap = cv2.VideoCapture(video_name)
         obj_number = 0
         progress = 0
         p_list = []
@@ -244,4 +244,4 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
         cv2.destroyAllWindows()
 
 
-main(['c1.avi','c2.avi'], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
+main(["F:/project/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
