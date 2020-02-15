@@ -20,6 +20,7 @@ print('Helmet model loaded complete')
 helmet_count = 0
 no_helmet_count = 0
 extra_top = 10
+ref_area = 0
 
 frame = None
 x1,y1,x2,y2 = 0,0,0,0
@@ -44,11 +45,12 @@ class Person:
         self.color = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
         self.footprint = [(self.xc,self.yc)]
         self.isSaved = False
+        self.status = (255,255,255)
         self.upward = None
         self.rightward = None
 
-    def update(self, frame, x, y, w, h, bottom):
-        self.life = 5
+    def update(self, frame, x, y, w, h, fps):
+        self.life = int(fps)
         self.x = int(x)
         self.y = int(y)
         self.w = w
@@ -65,13 +67,20 @@ class Person:
             self.rightward = False # <<
         else:
             self.rightward = True # >>
-        
-        if not self.isSaved and self.upward and y+h < bottom: #object float off bottom
+        dist = ((self.yc - self.first_y)**2 + (self.xc - self.first_x)**2)**(0.5)
+        if not self.isSaved and self.upward and dist > self.h/2:
+            self.isSaved = True
+            self.status = (0,0,0)
             self.saveImg(frame, x, y, w, h)
         
     def saveImg(self, frame, x, y, w, h):
-        global helmet_count, no_helmet_count
-        global current_video
+        global helmet_count, no_helmet_count, current_video, ref_area
+        area = w*h
+        ref_area = area if ref_area == 0 else ref_area
+        if area < ref_area*0.8:
+            return
+        if area < ref_area:
+            ref_area = area
         y0 = y-extra_top if y-extra_top > 0 else 0
         bike_img = frame[y0:y+h, x:x+w]
         sqr_img = cv2.resize(bike_img, (299,299))
@@ -104,10 +113,12 @@ class Person:
                 if helmet > 0.5: #helmet
                     helmet_count += 1
                     result_path = "extracted/helmet/"+spt+"#"+str(helmet_count)
+                    self.status = (0,255,0)
                 else: 
                     helmet = 1 - helmet
                     no_helmet_count += 1
                     result_path = "extracted/no_helmet/"+spt+"#"+str(no_helmet_count)
+                    self.status = (0,0,255)
                 
                 helmet = str(helmet*100)
                 helmet = helmet.split('.')
@@ -116,9 +127,6 @@ class Person:
                 result_path += "" + flip +" ["+ a + "." + b + "%].jpg"
                 cv2.imwrite(result_path,bike_img)
                 break
-        self.isSaved = True
-            # cv2.imshow(str(self.n),bike_img)
-            # cv2.waitKey(1)
         
 
 def mouse_drawing(event, x, y, flags, params):
@@ -225,7 +233,7 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                                 nearest_p = p
                                 exist = True
                     if exist:
-                        nearest_p.update(frame_copy, x, y, w, h, frame.shape[0])
+                        nearest_p.update(frame_copy, x, y, w, h,fps)
                         detected_p.append(nearest_p)
                     else:
                         new_person = Person(x, y, w, h, obj_number, fps)
@@ -236,9 +244,12 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                 p.life -= 1
                 if p.life == 0:
                     p_list.remove(p)
+                if p not in detected_p:
+                    in_frame = p.x > 1 and p.x+p.w < frame.shape[1]-1 and p.y > 1 and p.y+p.h < frame.shape[0]-1
+                    if not in_frame:
+                        p_list.remove(p)
                 if show:
-                    color = (0,255,0) if p.isSaved else (0,0,255)
-                    cv2.putText(disp_frame,str(p.n),(p.xc,p.yc),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
+                    cv2.putText(disp_frame,str(p.n),(p.xc,p.yc),cv2.FONT_HERSHEY_SIMPLEX,1,p.status,2)
             # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
             if show:
                 for p in p_list:
