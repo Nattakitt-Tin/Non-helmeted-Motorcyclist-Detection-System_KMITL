@@ -13,11 +13,12 @@ current_video = 'xxx'
 print('load model')
 general_model = InceptionResNetV2(weights='imagenet')
 print('Custom model loaded complete')
-helmet_model = load_model("inceptionresnetv2_final.h5")
+helmet_model = load_model("inceptionResNetV2_BEST.h5")
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=16,history=500,detectShadows=True)
 print('Helmet model loaded complete')
 
-img_num = 45
+helmet_count = 0
+no_helmet_count = 0
 extra_top = 10
 
 frame = None
@@ -69,7 +70,7 @@ class Person:
         
     def saveImg(self, frame, x, y, w, h):
         if not self.isSaved and self.direction == -1: # is up
-            global img_num
+            global helmet_count, no_helmet_count
             global current_video
             y0 = y-extra_top if y-extra_top > 0 else 0
             bike_img = frame[y0:y+h, x:x+w]
@@ -94,19 +95,30 @@ class Person:
                     preds = helmet_model.predict([[img]])
                     helmet = preds[0][1]
 
-                    result_path = "extracted/no_helmet/bike_"+str(img_num)+"_"+str(current_video)+".jpg"
-                    if helmet > 0.5: #helmet
-                        img_flip = cv2.flip(img, 1)
-                        preds_flip = helmet_model.predict([[img_flip]])
-                        helmet_flip = preds_flip[0][1]
-                        if helmet_flip > 0.5: #helmet
-                            result_path = "extracted/helmet/bike_"+str(img_num)+"_"+str(current_video)+".jpg"
+                    img_flip = cv2.flip(img, 1)
+                    preds_flip = helmet_model.predict([[img_flip]])
+                    helmet_flip = preds_flip[0][1]
+                    
+                    spt = current_video.split('/')
+                    spt = spt[-1]
+                    spt = spt.split('.')
+                    spt = spt[0]
+                    result_path = ''
+                    if helmet > 0.5 and helmet_flip > 0.5: #helmet
+                        helmet_count += 1
+                        result_path = "extracted/helmet/"+spt+"#"+str(helmet_count)
+                    else: 
+                        no_helmet_count += 1
+                        result_path = "extracted/no_helmet/"+spt+"#"+str(no_helmet_count)
+                    
+                    helmet = str(helmet)
+                    helmet = helmet[:4]
+                    helmet_flip = str(helmet_flip)
+                    helmet_flip = helmet_flip[:4]
+                    result_path += " ["+ helmet + '] [' + helmet_flip +"].jpg"
+
                     cv2.imwrite(result_path,bike_img)
                     found = True
-            if found:
-                # print()
-                # print('Bike #'+str(img_num),':',t3)
-                img_num += 1
             self.isSaved = True
 
 def mouse_drawing(event, x, y, flags, params):
@@ -160,7 +172,7 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
                 break
         fps = None
         delay = None
-        the_line = bottom-top - 100
+        the_line = int((bottom-top)*0.66)
         while True:
             _, frame = cap.read()
             if frame is None:
@@ -172,10 +184,10 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
                 delay = int(1000/fps) if real_fps else 1
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
-            cmin = '0' + str((current//int(fps))//60); cmin = cmin[len(cmin)-2:]
-            csec = '0' + str((current//int(fps))%60); csec = csec[len(csec)-2:]
-            tmin = '0' + str((total//int(fps))//60); tmin = tmin[len(tmin)-2:]
-            tsec = '0' + str((total//int(fps))%60); tsec = tsec[len(tsec)-2:]
+            cmin = '0' + str((current//int(fps))//60); cmin = cmin[-2:]
+            csec = '0' + str((current//int(fps))%60); csec = csec[-2:]
+            tmin = '0' + str((total//int(fps))//60); tmin = tmin[-2:]
+            tsec = '0' + str((total//int(fps))%60); tsec = tsec[-2:]
             time_progress = ' (' + cmin + ':' + csec + '/' + tmin + ':' + tsec + ') '
             sys.stdout.write("Progress: "+ "{0:.3f}".format(100*current/total)+'%' + time_progress)
             sys.stdout.flush()
@@ -244,4 +256,4 @@ def main(video_name_list, bike_h, max_speed_ratio, show=True, real_fps=False):
         cv2.destroyAllWindows()
 
 
-main(["F:/project/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
+main(["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"], bike_h=100, max_speed_ratio=2, real_fps=False, show=True)
