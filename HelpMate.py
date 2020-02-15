@@ -41,88 +41,85 @@ class Person:
         self.n = n
         self.life = int(life)
         
-        self.R = random.randint(0,255)
-        self.G = random.randint(0,255)
-        self.B = random.randint(0,255)
+        self.color = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+        self.footprint = [(self.xc,self.yc)]
         self.isSaved = False
-        self.downward = None
+        self.upward = None
         self.rightward = None
 
-    def update(self, frame, x, y, w, h, bottom,the_line):
+    def update(self, frame, x, y, w, h, bottom):
         self.life = 5
-        if self.yc - self.first_y <= 0:
-            self.downward = False #up
-        else:
-            self.downward = True # down
-
-        if self.xc - self.first_x < 0:
-            self.rightward = False # <<
-        else:
-            self.rightward = True # >>
-
-        # if not self.downward:
-        #     if y > self.min_y:
-        #         y = self.min_y
-        #     else:
-        #         self.min_y = y
-        
         self.x = int(x)
         self.y = int(y)
         self.w = w
         self.h = h
         self.xc = int(x+(w/2))
         self.yc = int(y+(h/2))
+        self.footprint.append((self.xc,self.yc))
+        if self.yc - self.first_y < 0:
+            self.upward = True #up
+        else:
+            self.upward = False # down
+
+        if self.xc - self.first_x < 0:
+            self.rightward = False # <<
+        else:
+            self.rightward = True # >>
         
-        if y < the_line < y+h < bottom: #object float off bottom
+        if not self.isSaved and self.upward and y+h < bottom: #object float off bottom
             self.saveImg(frame, x, y, w, h)
         
     def saveImg(self, frame, x, y, w, h):
-        if not self.isSaved and not self.downward: # is up
-            global helmet_count, no_helmet_count
-            global current_video
-            y0 = y-extra_top if y-extra_top > 0 else 0
-            bike_img = frame[y0:y+h, x:x+w]
-            sqr_img = cv2.resize(bike_img, (299,299))
-            
-            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        global helmet_count, no_helmet_count
+        global current_video
+        y0 = y-extra_top if y-extra_top > 0 else 0
+        bike_img = frame[y0:y+h, x:x+w]
+        sqr_img = cv2.resize(bike_img, (299,299))
+        
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        sqr_img = image.img_to_array(sqr_img)
+        imgx = np.expand_dims(sqr_img, axis=0)
+        preprocess_input(imgx) #may use /255. if something go wrong
+        preds = general_model.predict(imgx)
 
-            # cv2.imshow('img',sqr_img)
-            sqr_img = image.img_to_array(sqr_img)
-            imgx = np.expand_dims(sqr_img, axis=0)
-            preprocess_input(imgx) #may use /255. if something go wrong
-            preds = general_model.predict(imgx)
+        top = decode_predictions(preds, top=5)[0]
 
-            t3 = decode_predictions(preds, top=3)[0]
+        for result in top:
+            if result[1] == 'motor_scooter': #and result[2] > 0.1:
+                img = cv2.resize(bike_img, (299,299))
+                img = img/255.
+                flip = ''
+                if not self.rightward:
+                    img = cv2.flip(img, 1)
+                    flip = 'flip'
 
-            for result in t3:
-                if result[1] == 'motor_scooter' and result[2] > 0.1:
-                    # sqr_img = sqr_img/255.
-                    img = cv2.resize(bike_img, (299,299))
-                    img = img/255.
-                    flip = ''
-                    if not self.rightward:
-                        img = cv2.flip(img, 1)
-                        flip = 'flip'
-
-                    preds = helmet_model.predict([[img]])
-                    helmet = preds[0][1]
-                    
-                    spt = current_video.split('/')
-                    spt = spt[-1]
-                    spt = spt.split('.')
-                    spt = spt[0]
-                    result_path = ''
-                    if helmet > 0.5: #helmet
-                        helmet_count += 1
-                        result_path = "extracted/helmet/"+spt+"#"+str(helmet_count)
-                    else: 
-                        no_helmet_count += 1
-                        result_path = "extracted/no_helmet/"+spt+"#"+str(no_helmet_count)
-                    helmet = str(helmet)
-                    helmet = helmet[:4]
-                    result_path += "" + flip +" ["+ helmet + "].jpg"
-                    cv2.imwrite(result_path,bike_img)
-            self.isSaved = True
+                preds = helmet_model.predict([[img]])
+                helmet = preds[0][1]
+                
+                spt = current_video.split('/')
+                spt = spt[-1]
+                spt = spt.split('.')
+                spt = spt[0]
+                result_path = ''
+                if helmet > 0.5: #helmet
+                    helmet_count += 1
+                    result_path = "extracted/helmet/"+spt+"#"+str(helmet_count)
+                else: 
+                    helmet = 1 - helmet
+                    no_helmet_count += 1
+                    result_path = "extracted/no_helmet/"+spt+"#"+str(no_helmet_count)
+                
+                helmet = str(helmet*100)
+                helmet = helmet.split('.')
+                a = helmet[0]
+                b = helmet[1][:2]
+                result_path += "" + flip +" ["+ a + "." + b + "%].jpg"
+                cv2.imwrite(result_path,bike_img)
+                break
+        self.isSaved = True
+            # cv2.imshow(str(self.n),bike_img)
+            # cv2.waitKey(1)
+        
 
 def mouse_drawing(event, x, y, flags, params):
     global x1,y1,x2,y2,mouse_down,crop
@@ -175,7 +172,7 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                 break
         fps = None
         delay = None
-        the_line = int((bottom-top)*0.7)
+        # the_line = int((bottom-top)*0.7)
         while True:
             _, frame = cap.read()
             if frame is None:
@@ -200,8 +197,8 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
             frame = frame[top:bottom, left:right]
             frame_copy = frame.copy()
             disp_frame = frame.copy()
-            if mouse_down:
-                the_line = y2
+            # if mouse_down:
+            #     the_line = y2
             binary = MOG2.apply(frame_copy)
             _, binary = cv2.threshold(binary,200,255,cv2.THRESH_BINARY)
             kernel = np.ones((5,5),np.uint8)
@@ -212,9 +209,10 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
 
             ctrs, hier = cv2.findContours(binary, cv2.RETR_EXTERNAL , cv2.CHAIN_APPROX_SIMPLE)
             detected_p = []
-            for i, ctr in enumerate(ctrs):
+            for ctr in ctrs:
                 x, y, w, h = cv2.boundingRect(ctr)  # get xywh from points
-                if h > bike_h and h > w:
+                in_frame = x > 0 and x+w < frame.shape[1] and y > 0 and y+h < frame.shape[0]
+                if h > bike_h and h > w and in_frame:
                     xc, yc = x+(w/2), y+(h/2)
                     exist = False
                     min_diff = 9999
@@ -222,33 +220,38 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                     for p in p_list:
                         if p not in detected_p:
                             diff = ((xc-p.xc)**2 + (yc-p.yc)**2)**(0.5)
-                            if diff < min_diff and diff < frame.shape[0]/2:
+                            if diff < min_diff and diff < bike_h*2:
                                 min_diff = diff
                                 nearest_p = p
                                 exist = True
                     if exist:
-                        nearest_p.update(frame_copy, x, y, w, h, frame.shape[0], the_line)
+                        nearest_p.update(frame_copy, x, y, w, h, frame.shape[0])
                         detected_p.append(nearest_p)
                     else:
                         new_person = Person(x, y, w, h, obj_number, fps)
                         p_list.append(new_person) # create new person
                         detected_p.append(new_person)
                         obj_number+=1
-                    if show:
-                        for p in p_list:
-                            cv2.rectangle(disp_frame, (p.x, p.y), (p.x + p.w, p.y + p.h), (p.B, p.G, p.R), 2)
             for p in p_list.copy():
                 p.life -= 1
                 if p.life == 0:
                     p_list.remove(p)
-                p.updated = False
                 if show:
+                    color = (0,255,0) if p.isSaved else (0,0,255)
                     cv2.putText(disp_frame,str(p.n),(p.xc,p.yc),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),2)
             # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
             if show:
+                for p in p_list:
+                    cv2.rectangle(disp_frame, (p.x, p.y), (p.x + p.w, p.y + p.h), p.color, 3)
+                    last,curr = None,None
+                    for point in p.footprint:
+                        curr = point
+                        if curr is not None and last is not None:
+                            cv2.line(disp_frame, curr, last, p.color,3)
+                        last = curr
                 width = int(disp_frame.shape[1]*scale)
                 height = int(disp_frame.shape[0]*scale)
-                cv2.line(disp_frame, (0,the_line), (right,the_line), (69,255,36), 2)
+                # cv2.line(disp_frame, (0,the_line), (right,the_line), (69,255,36), 2)
                 cv2.imshow('BGR', cv2.resize(disp_frame, (width, height)))
                 cv2.imshow('Binary', cv2.resize(binary, (width, height)))
                 key = cv2.waitKey(delay) ################################# DELAY IS HERE ####################################
@@ -267,5 +270,5 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
         cap.release()
         cv2.destroyAllWindows()
 
-
-main(["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/a1.mp4"], bike_h=100, real_fps=False, show=True)
+file_names = ["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"]
+main(file_names, bike_h=100, real_fps=False, show=True)
