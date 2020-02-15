@@ -1,14 +1,7 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import sys
-import random
-
-from tensorflow.keras.models import load_model
-from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2 
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.inception_resnet_v2 import preprocess_input, decode_predictions
-
+po = sys.argv[1]
 current_video = 'xxx'
 
 frame = None
@@ -43,7 +36,7 @@ def main(video_name_list,max_speed_ratio, show=True, real_fps=False):
     for video_name in video_name_list:
         current_video = video_name
         cap = cv2.VideoCapture(video_name)
-        print("Process Started on Video:",video_name)
+        # print("Process Started on Video:",video_name)
         _, first = cap.read()
         if first is None:
                 print('Nothing to read, Closing Process')
@@ -61,6 +54,10 @@ def main(video_name_list,max_speed_ratio, show=True, real_fps=False):
             if (x1 > 0 or x2 > 0 or  y1 > 0 or y2 > 0) and not mouse_down:
                 left,right,top,bottom = x1,x2,y1,y2
                 crop = True
-                print(left,right,top,bottom)
+                print(left)
+                print(right)
+                print(top)
+                print(bottom)
 
-main(["F:/project/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"], max_speed_ratio=2, real_fps=False, show=True)
+
+main([po], max_speed_ratio=2, real_fps=False, show=True)

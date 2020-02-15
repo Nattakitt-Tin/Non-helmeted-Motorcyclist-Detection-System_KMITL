@@ -7,5 +7,5 @@ new_di = new_di+fo1
 os.mkdir(new_di)
 os.mkdir(new_di+"/no_helmet")
 os.mkdir(new_di+"/helmet")
-print("make di at : ",new_di)
+print(new_di)
 sys.stdout.flush()
