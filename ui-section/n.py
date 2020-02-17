@@ -271,5 +271,5 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
         cap.release()
         cv2.destroyAllWindows()
 
-file_names = ["D:/CopyFileCCTV/Chanel60/13_1_63/a1.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a2.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a3.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a4.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a5.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a6.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a7.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a8.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a9.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a10.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a11.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a12.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a13.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a14.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a15.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a16.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a17.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a18.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a19.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a20.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a21.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a22.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a23.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a24.avi"]
+file_names = ["F:/project/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"]
 main(file_names, bike_h=100, real_fps=False, show=True)
