@@ -3,11 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 import random
-import os
-import re
-
-os.system("conda activate gputest")
-sys.path.append("C:/Users/59010401/conda/envs/gputest/python.exe")
 
 from tensorflow.keras.models import load_model
 from tensorflow.keras.applications.inception_resnet_v2 import InceptionResNetV2 
@@ -22,21 +17,6 @@ helmet_model = load_model("inceptionResNetV2_BEST.h5")
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=16,history=500,detectShadows=True)
 print('Helmet model loaded complete')
 
-n_list = sys.argv[1]
-n_list = n_list.split(',')
-# n_list = n_list.split('\\')
-# pos = sys.argv[2]
-# pos = pos.split(',')
-# out_f = sys.argv[6]
-# print(n_list)
-# print(pos)
-# print(out_f)
-
-# n_list = ["F:/sec2/42_200113090000_1000_1.mp4"]
-# pos = sys.argv[2]
-# out_f = "C:/Users/59010401/Desktop/extracted"
-
-
 helmet_count = 0
 no_helmet_count = 0
 extra_top = 10
@@ -46,24 +26,7 @@ x1,y1,x2,y2 = 0,0,0,0
 mouse_down = False
 crop = False
 scale = 0.7
-
-path = "F:/sec2/extracted"
-
-num1 = sys.argv[2]
-num2 = sys.argv[3]
-num3 = sys.argv[4]
-num4 = sys.argv[5]
-# path = sys.argv[6]
-# print(pos)
-# print(num1)
-# print(num2)
-# print(path)
-# print(out_f)
-# test print 
-
-
-
-
+path = "C:/Users/59010401/Desktop/extracted"
 
 class Person:
     def __init__(self, x, y, w, h, n, life):
@@ -109,7 +72,7 @@ class Person:
         
     def saveImg(self, frame, x, y, w, h):
         global helmet_count, no_helmet_count
-        global current_video,path
+        global current_video
         y0 = y-extra_top if y-extra_top > 0 else 0
         bike_img = frame[y0:y+h, x:x+w]
         sqr_img = cv2.resize(bike_img, (299,299))
@@ -157,12 +120,31 @@ class Person:
         self.isSaved = True
             # cv2.imshow(str(self.n),bike_img)
             # cv2.waitKey(1)
+        
+
+def mouse_drawing(event, x, y, flags, params):
+    global x1,y1,x2,y2,mouse_down,crop
+    if event == cv2.EVENT_LBUTTONDOWN:
+        x1 = int(x/scale)
+        y1 = int(y/scale)
+        mouse_down = True
+    elif event == cv2.EVENT_LBUTTONUP:
+        mouse_down = False
+        if x1 > x2:
+            x1,x2 = x2,x1
+        if y1 > y2:
+            y1,y2 = y2,y1
+    if mouse_down:
+        x2 = int(x/scale)
+        y2 = int(y/scale)
 
 def main(video_name_list, bike_h, show=True, real_fps=False):
-    global current_video, progress, crop ,num1,num2,num3,num4
+    global current_video, progress, crop 
 
-    left,right,top,bottom = int(num1),int(num2),int(num3),int(num4)
+    left,right,top,bottom = 0,0,0,0
     cv2.namedWindow("BGR")
+    cv2.setMouseCallback("BGR", mouse_drawing)
+
     for video_name in video_name_list:
         current_video = video_name
         cap = cv2.VideoCapture(video_name)
@@ -176,6 +158,19 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                 continue
         while np.average(first) < 10: #skip black frame
             _, first = cap.read()
+        while not crop:
+            disp_frame = first.copy()
+            if mouse_down:
+                cv2.rectangle(disp_frame,(x1,y1),(x2,y2),(0, 0, 252), 2)
+            width = int(disp_frame.shape[1]*scale)
+            height = int(disp_frame.shape[0]*scale)
+            cv2.imshow('BGR', cv2.resize(disp_frame, (width, height)))
+            key = cv2.waitKey(1)
+            if (x1 > 0 or x2 > 0 or  y1 > 0 or y2 > 0) and not mouse_down:
+                left,right,top,bottom = x1,x2,y1,y2
+                crop = True
+                # cv2.destroyAllWindows()
+                break
         fps = None
         delay = None
         # the_line = int((bottom-top)*0.7)
@@ -276,5 +271,5 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
         cap.release()
         cv2.destroyAllWindows()
 
-file_names = n_list
+file_names = ["F:/project/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"]
 main(file_names, bike_h=100, real_fps=False, show=True)
