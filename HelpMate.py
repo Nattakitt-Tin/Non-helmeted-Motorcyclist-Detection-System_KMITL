@@ -21,13 +21,13 @@ helmet_count = 0
 no_helmet_count = 0
 extra_top = 10
 ref_area = 0
+the_line = 0
 
 frame = None
 x1,y1,x2,y2 = 0,0,0,0
 mouse_down = False
 crop = False
 scale = 0.7
-path = "C:/Users/59010401/Desktop/extracted"
 
 class Person:
     def __init__(self, x, y, w, h, n, life):
@@ -45,7 +45,7 @@ class Person:
         
         self.color = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
         self.footprint = [(self.xc,self.yc)]
-        self.isSaved = False
+        self.detectToken = 4
         self.status = (255,255,255)
         self.upward = None
         self.rightward = None
@@ -68,20 +68,18 @@ class Person:
             self.rightward = False # <<
         else:
             self.rightward = True # >>
-        dist = ((self.yc - self.first_y)**2 + (self.xc - self.first_x)**2)**(0.5)
-        if not self.isSaved and self.upward and dist > self.h/2:
-            self.isSaved = True
+        # dist = ((self.yc - self.first_y)**2 + (self.xc - self.first_x)**2)**(0.5)
+        if self.detectToken > 0 and self.upward and self.yc > the_line:
+            self.detectToken -= 1
             self.status = (0,0,0)
             self.saveImg(frame, x, y, w, h)
         
     def saveImg(self, frame, x, y, w, h):
-        global helmet_count, no_helmet_count, current_video, ref_area
+        global helmet_count, no_helmet_count, current_video, ref_area, the_line
         area = w*h
-        ref_area = area if ref_area == 0 else ref_area
-        if area < ref_area*0.8:
-            return
-        if area < ref_area:
-            ref_area = area
+        # ref_area = area if ref_area == 0 else ref_area
+        # if area < ref_area*0.5:
+        #     return
         y0 = y-extra_top if y-extra_top > 0 else 0
         bike_img = frame[y0:y+h, x:x+w]
         sqr_img = cv2.resize(bike_img, (299,299))
@@ -96,12 +94,12 @@ class Person:
 
         for result in top:
             if result[1] == 'motor_scooter': #and result[2] > 0.1:
+                self.detectToken = 0
+                the_line = int(the_line*0.5 + self.y*0.5)
                 img = cv2.resize(bike_img, (299,299))
                 img = img/255.
-                flip = ''
                 if not self.rightward:
                     img = cv2.flip(img, 1)
-                    flip = 'flip'
 
                 preds = helmet_model.predict([[img]])
                 helmet = preds[0][1]
@@ -125,7 +123,7 @@ class Person:
                 helmet = helmet.split('.')
                 a = helmet[0]
                 b = helmet[1][:2]
-                result_path += "" + flip +" ["+ a + "." + b + "%].jpg"
+                result_path += " ["+ a + "." + b + "%].jpg"
                 cv2.imwrite(result_path,bike_img)
                 break
         
@@ -190,7 +188,7 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
             if fps is None:
                 fps = cap.get(cv2.CAP_PROP_FPS)
                 print('fps:',fps)
-                delay = int(1000/fps) if real_fps else 1
+            delay = int(1000/fps) if real_fps else 1
             total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
             current = int(cap.get(cv2.CAP_PROP_POS_FRAMES))
             cmin = '0' + str((current//int(fps))//60); cmin = cmin[-2:]
@@ -240,21 +238,16 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                         new_person = Person(x, y, w, h, obj_number, fps)
                         p_list.append(new_person) # create new person
                         detected_p.append(new_person)
-                        obj_number+=1
+                        obj_number += 1
             for p in p_list.copy():
                 p.life -= 1
                 if p.life == 0:
                     p_list.remove(p)
-                if p not in detected_p:
-                    in_frame = p.x > 1 and p.x+p.w < frame.shape[1]-1 and p.y > 1 and p.y+p.h < frame.shape[0]-1
-                    if not in_frame:
-                        p_list.remove(p)
-                if show:
-                    cv2.putText(disp_frame,str(p.n),(p.xc,p.yc),cv2.FONT_HERSHEY_SIMPLEX,1,p.status,2)
-            # cv2.drawContours(frame, ctrs, -1, (0, 0, 255), 1)
             if show:
+                cv2.line(disp_frame, (0,the_line), (right,the_line), (0,100,255), 2)
                 for p in p_list:
                     cv2.rectangle(disp_frame, (p.x, p.y), (p.x + p.w, p.y + p.h), p.color, 3)
+                    cv2.putText(disp_frame,str(p.n),(p.xc,p.yc),cv2.FONT_HERSHEY_SIMPLEX,1,p.status,2)
                     last,curr = None,None
                     for point in p.footprint:
                         curr = point
@@ -263,7 +256,6 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
                         last = curr
                 width = int(disp_frame.shape[1]*scale)
                 height = int(disp_frame.shape[0]*scale)
-                # cv2.line(disp_frame, (0,the_line), (right,the_line), (69,255,36), 2)
                 cv2.imshow('BGR', cv2.resize(disp_frame, (width, height)))
                 cv2.imshow('Binary', cv2.resize(binary, (width, height)))
                 key = cv2.waitKey(delay) ################################# DELAY IS HERE ####################################
@@ -282,5 +274,5 @@ def main(video_name_list, bike_h, show=True, real_fps=False):
         cap.release()
         cv2.destroyAllWindows()
 
-file_names = ["D:/CopyFileCCTV/Chanel60/13_1_63/a1.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a2.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a3.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a4.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a5.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a6.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a7.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a8.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a9.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a10.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a11.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a12.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a13.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a14.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a15.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a16.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a17.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a18.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a19.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a20.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a21.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a22.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a23.avi","D:/CopyFileCCTV/Chanel60/13_1_63/a24.avi"]
+file_names = ["C:/Users/59010093/Desktop/Project4D/Non-helmeted-Motorcyclist-Detection-System_KMITL/video/d1.avi"]
 main(file_names, bike_h=100, real_fps=False, show=True)
