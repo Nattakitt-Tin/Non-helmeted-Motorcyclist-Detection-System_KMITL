@@ -13,7 +13,7 @@ function se(){
       var pyshell =  require('python-shell');
       var options = {
       args : folderPaths }
-      pyshell.run('make_di.py',options,  function  (err, results)  {
+      pyshell.run('/python_code/make_di.py',options,  function  (err, results)  {
         if  (err)  throw err;
         out_po.push(results)
       console.log(out_po)   
@@ -39,7 +39,7 @@ function fi(){
         var pyshell =  require('python-shell');
         var options = {
         args : folderPaths[i] }
-        pyshell.run('re_name.py',options,  function  (err, results)  {
+        pyshell.run('/python_code/re_name.py',options,  function  (err, results)  {
           if  (err)  throw err;
          file_re_name.push(results);
         //  file_list.push(results[i])
@@ -72,7 +72,7 @@ function po(){
     var pyshell =  require('python-shell');
         var options = {
         args : file_re_name[0] }
-        pyshell.run('cr.py',options,  function  (err, results)  {
+        pyshell.run('/python_code/cr.py',options,  function  (err, results)  {
           if  (err)  throw err;
           position.push(results[0])
           position.push(results[1])
@@ -88,14 +88,12 @@ function start(){
 
   var pyshell =  require('python-shell');
       var options = {
-      args : [file_re_name , position[0],position[1],position[2],position[3],out_po] }
-      pyshell.run('start.py',options,  function  (err, results)  {
+      args : [file_re_name,out_po,position[0],position[1],position[2],position[3]] }
+      pyshell.run('/HelpMate.py',options,  function  (err, results)  {
         if  (err)  throw err;
-        console.log(results[0])
-        console.log(results[1])
-        console.log(results[2])
-        console.log(results[3])
-
+        console.log(results)
+        // console.log(results[1])
      });  
 
 }
+

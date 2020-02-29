@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import sys
 import random
 import os
-import re
 
 os.system("conda activate gputest")
 sys.path.append("C:/Users/59010401/conda/envs/gputest/python.exe")
@@ -27,7 +26,7 @@ n_list = n_list.split(',')
 # n_list = n_list.split('\\')
 # pos = sys.argv[2]
 # pos = pos.split(',')
-# out_f = sys.argv[6]
+path = sys.argv[6]
 # print(n_list)
 # print(pos)
 # print(out_f)
@@ -47,7 +46,7 @@ mouse_down = False
 crop = False
 scale = 0.7
 
-path = "F:/sec2/extracted"
+# path = out_f
 
 num1 = sys.argv[2]
 num2 = sys.argv[3]
@@ -58,7 +57,7 @@ num4 = sys.argv[5]
 # print(num1)
 # print(num2)
 # print(path)
-# print(out_f)
+# print(sys.argv[6])
 # test print 
 
 
