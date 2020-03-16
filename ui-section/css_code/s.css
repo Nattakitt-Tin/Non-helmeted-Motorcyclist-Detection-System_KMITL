@@ -4,3 +4,6 @@ body {
     background: #3C3C3C;
 }
 
+canvas {
+    background-color: chartreuse;
+}
