@@ -1,6 +1,7 @@
 const file_re_name = []
 const position = [] 
 const out_po = []
+const reso = []
 
 function se(){
     const fs = require("fs");
@@ -18,9 +19,7 @@ function se(){
         out_po.push(results)
       console.log(out_po)   
      });  
-    
     });
-      
     }
 
 
@@ -41,11 +40,18 @@ function fi(){
         args : folderPaths[i] }
         pyshell.run('/python_code/re_name.py',options,  function  (err, results)  {
           if  (err)  throw err;
-         file_re_name.push(results);
+         file_re_name.push(results[0]);
+         reso[0] = results[1];
+         reso[1] = results[2];
+         position[0] = 0
+         position[1] = reso[1]
+         position[2] = 0
+         position[3] = reso[0]
+         show_img()
+
         //  file_list.push(results[i])
          
-       });  
-    
+       });     
         // file_list.push(folderPaths[i])
         var iframe = document.getElementById("bg");
         // var elmnt = iframe.contentWindow.document.getElementById("f");
@@ -56,13 +62,23 @@ function fi(){
         h.appendChild(tr)
         tr.appendChild(th_path)
        }
+       
+       
+       
       //  console.log("this is path : ",file_list)
        console.log("rename ",file_re_name)
+       console.log("reso ",reso)
+       console.log("pos ",position)
+       
+
+      
+
       //  console.log(file_re_name.length)
     }
     
     
     );
+    
     }
     
 
@@ -74,13 +90,13 @@ function po(){
         args : file_re_name[0] }
         pyshell.run('/python_code/cr.py',options,  function  (err, results)  {
           if  (err)  throw err;
-          position.push(results[0])
-          position.push(results[1])
-          position.push(results[2])
-          position.push(results[3])
+          position[0] = results[0]
+          position[1] = results[1]
+          position[2] = results[2]
+          position[3] = results[3]
           console.log(position)
        });  
-
+       setTimeout(use_cr, 8000)
 }
 
 function start(){
@@ -95,5 +111,28 @@ function start(){
         // console.log(results[1])
      });  
 
+}
+
+
+function show_img(){
+  var para = document.createElement("img");
+  para.setAttribute("src","./frame.png")
+  para.setAttribute("id","pic")
+  var element = document.getElementById("ii");
+  // element.appendChild(para)
+  var l = element.getElementsByTagName("img").length;
+  console.log(l)
+
+  if (l == 0)
+    element.appendChild(para)
+  else
+    console.log("to many")
+}
+
+function use_cr(){
+  var element = document.getElementById("pic");
+  element.setAttribute("src","./cr.png");
+  
+  
 }
 

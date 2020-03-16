@@ -17,7 +17,7 @@ current_video = 'xxx'
 print('load model')
 general_model = InceptionResNetV2(weights='imagenet')
 print('Custom model loaded complete')
-helmet_model = load_model("incV3_final.h5")
+helmet_model = load_model("ResNet.h5")
 MOG2 = cv2.createBackgroundSubtractorMOG2(varThreshold=16,history=500,detectShadows=True)
 print('Helmet model loaded complete')
 
@@ -111,7 +111,7 @@ class Person:
             if result[1] == 'motor_scooter': #and result[2] > 0.1:
                 self.detectToken = 0
                 the_line = int(the_line*0.5 + self.y*0.5)
-                img = cv2.resize(bike_img, (299,299))
+                img = cv2.resize(bike_img, (224,224))
                 img = img/255.
                 if not self.rightward:
                     img = cv2.flip(img, 1)

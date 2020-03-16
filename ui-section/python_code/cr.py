@@ -58,6 +58,9 @@ def main(video_name_list,max_speed_ratio, show=True, real_fps=False):
                 print(right)
                 print(top)
                 print(bottom)
+        crop = first[int(top):int(bottom),int(left):int(right)]
+        cv2.imwrite("cr.png",crop)
+                
 
 
 main([po], max_speed_ratio=2, real_fps=False, show=True)
