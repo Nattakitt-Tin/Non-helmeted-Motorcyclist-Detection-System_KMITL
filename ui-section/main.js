@@ -1,8 +1,9 @@
 const {app, BrowserWindow,dialog} = require('electron')
 
 function createWindow () {
-    window = new BrowserWindow({width: 625, height: 640})
+    window = new BrowserWindow({width: 680, height: 400,icon:"logo2.png"})
     window.loadFile('index.html')
+    
     // window.setMenu(null)
 }
 

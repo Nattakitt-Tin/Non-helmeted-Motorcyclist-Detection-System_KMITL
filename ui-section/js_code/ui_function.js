@@ -17,7 +17,9 @@ function se(){
       pyshell.run('/python_code/make_di.py',options,  function  (err, results)  {
         if  (err)  throw err;
         out_po.push(results)
-      console.log(out_po)   
+      console.log(out_po)
+      var element = document.getElementById("fname");
+      element.setAttribute("value",out_po);   
      });  
     });
     }
@@ -115,6 +117,8 @@ function start(){
 
 
 function show_img(){
+  var st = document.getElementById("pic_st");
+  st.remove();
   var para = document.createElement("img");
   para.setAttribute("src","./frame.png")
   para.setAttribute("id","pic")

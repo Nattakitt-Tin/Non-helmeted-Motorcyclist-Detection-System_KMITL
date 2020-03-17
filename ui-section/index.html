@@ -6,15 +6,31 @@
       <title>Help-Mate</title>
     </head>
      <body>
-    <button onclick="fi()">Select File</button>
-    <button onclick="se()">Export File</button>
-    <button onclick="po()">Select Position</button>
-    <button onclick="start()">Start</button>
-    <div id="ii">
-      <canvas></canvas>
-    </div>
+<div class="grid-container">
+  <div class="left">
+    <div class="file">
+    <button onclick="fi()" class="button button5">Import File</button>
     <iframe src="file_d.html" id="bg"></iframe>
+      </div>
+    </div>
+    <div class="right">
+    <div class="export">
+      <button onclick="se()" class="button button3">Export to</button>
+      <input type="text" id="fname" name="fname" value="None" disabled>
+    </div>
     
+    <div class="focus">
+      <div class="inli">
+    <div id="f">Focus Area</div>
+    <button onclick="po()"class="button button2">Draw</button>
+  </div>
+    <div id="ii">
+      <img id="pic_st" src="no.png">
+    </div>
+    <button onclick="start()" class="button button4">Start</button>
+  </div>
+</div>
+</div>
      </body>
 
 <script src="./js_code/ui_function.js"></script>
